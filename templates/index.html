@@ -1,0 +1,353 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyPilot AI — Focus Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-bg">
+            <div class="auth-orb orb1"></div>
+            <div class="auth-orb orb2"></div>
+            <div class="auth-orb orb3"></div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-brand">
+                <span class="brand-icon">⬡</span>
+                <span class="brand-name">StudyPilot</span>
+            </div>
+            <div class="auth-tagline">AI-Powered Focus Intelligence</div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+                <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+            </div>
+
+            <div id="form-login" class="auth-form">
+                <div class="field-group">
+                    <label>Username</label>
+                    <input type="text" id="login-username" placeholder="your_username" autocomplete="username" />
+                </div>
+                <div class="field-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+                </div>
+                <button class="auth-btn" onclick="doLogin()">
+                    <span>Enter Dashboard</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <div id="auth-error" class="auth-error"></div>
+            </div>
+
+            <div id="form-signup" class="auth-form hidden">
+                <div class="field-group">
+                    <label>Username</label>
+                    <input type="text" id="signup-username" placeholder="your_username" />
+                </div>
+                <div class="field-group">
+                    <label>Email</label>
+                    <input type="email" id="signup-email" placeholder="you@example.com" />
+                </div>
+                <div class="field-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="min 6 characters" />
+                </div>
+                <button class="auth-btn" onclick="doSignup()">
+                    <span>Start Learning</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <div id="signup-error" class="auth-error"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SHELL -->
+    <div id="app-shell" class="app-shell hidden">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-icon">⬡</span>
+                <span>StudyPilot</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+                    <span class="nav-icon">◈</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-page="planner" onclick="navigate('planner')">
+                    <span class="nav-icon">◫</span>
+                    <span>Planner</span>
+                </a>
+                <a class="nav-item" data-page="schedule" onclick="navigate('schedule')">
+                    <span class="nav-icon">◷</span>
+                    <span>Schedule</span>
+                </a>
+                <a class="nav-item" data-page="analytics" onclick="navigate('analytics')">
+                    <span class="nav-icon">◉</span>
+                    <span>Analytics</span>
+                </a>
+                <a class="nav-item" data-page="chatbot" onclick="navigate('chatbot')">
+                    <span class="nav-icon">◎</span>
+                    <span>AI Tutor</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-pill">
+                    <span class="user-avatar" id="sidebar-avatar">U</span>
+                    <span id="sidebar-username">User</span>
+                </div>
+                <button class="logout-btn" onclick="doLogout()">⇥ Out</button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- DASHBOARD PAGE -->
+            <div id="page-dashboard" class="page active">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-sub" id="dashboard-greeting">Good morning — ready to focus?</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-primary" onclick="navigate('planner')">+ New Task</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" id="stat-productivity">
+                        <div class="stat-label">Productivity Score</div>
+                        <div class="stat-value" id="val-productivity">—</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="fill-productivity"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Tasks Completed</div>
+                        <div class="stat-value" id="val-completed">—</div>
+                        <div class="stat-sub" id="val-total">of — total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Tasks</div>
+                        <div class="stat-value" id="val-pending">—</div>
+                        <div class="stat-sub">need attention</div>
+                    </div>
+                    <div class="stat-card focus-card" id="live-focus-card">
+                        <div class="stat-label">Current Focus</div>
+                        <div class="focus-badge" id="live-focus-badge">—</div>
+                        <div class="stat-sub" id="live-focus-conf"></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Focus Trend — 7 Days</h3>
+                        </div>
+                        <canvas id="chart-focus-trend" height="200"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Tasks</h3>
+                            <a onclick="navigate('planner')" class="card-link">View all →</a>
+                        </div>
+                        <div id="recent-tasks-list" class="task-mini-list"></div>
+                    </div>
+                </div>
+
+                <div class="card chatbot-preview-card">
+                    <div class="chatbot-preview-content">
+                        <div>
+                            <h3>AI Study Tutor</h3>
+                            <p>Get instant help with any topic. Powered by AI.</p>
+                        </div>
+                        <button class="btn-accent" onclick="navigate('chatbot')">Open Tutor →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLANNER PAGE -->
+            <div id="page-planner" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Task Planner</h1>
+                        <p class="page-sub">Manage your study tasks</p>
+                    </div>
+                    <button class="btn-primary" onclick="openTaskModal()">+ Add Task</button>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="filterTasks('all', this)">All</button>
+                    <button class="filter-btn" onclick="filterTasks('pending', this)">Pending</button>
+                    <button class="filter-btn" onclick="filterTasks('completed', this)">Completed</button>
+                </div>
+
+                <div id="tasks-grid" class="tasks-grid"></div>
+            </div>
+
+            <!-- SCHEDULE PAGE -->
+            <div id="page-schedule" class="page hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Smart Schedule</h1>
+                        <p class="page-sub">AI-optimized study time slots</p>
+                    </div>
+                    <button class="btn-primary" onclick="generateSchedule()">⚡ Generate Schedule</button>
+                </div>
+                <div id="schedule-list" class="schedule-list"></div>
+            </div>
+
+            <!-- ANALYTICS PAGE -->
+            <div id="page-analytics" class="page hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Analytics</h1>
+                    <p class="page-sub">Your learning insights</p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Daily Completions</h3>
+                        </div>
+                        <canvas id="chart-completions" height="200"></canvas>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Subject Breakdown</h3>
+                        </div>
+                        <canvas id="chart-subjects" height="200"></canvas>
+                    </div>
+                    <div class="card chart-card full-width">
+                        <div class="card-header">
+                            <h3>Focus Distribution</h3>
+                        </div>
+                        <canvas id="chart-focus-dist" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHATBOT PAGE -->
+            <div id="page-chatbot" class="page hidden">
+                <div class="page-header">
+                    <h1 class="page-title">AI Study Tutor</h1>
+                    <p class="page-sub">Ask anything about your studies — powered by AI</p>
+                </div>
+                <div class="chatbot-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-msg bot">
+                            <div class="chat-avatar bot-avatar">⬡</div>
+                            <div class="chat-bubble">
+                                Hi! I'm your AI Study Tutor. Ask me anything — concepts, formulas, study strategies,
+                                exam tips, or help understanding your tasks. What are you working on today?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="chat-suggestions">
+                            <button class="suggestion-chip" onclick="sendSuggestion(this)">Explain a concept</button>
+                            <button class="suggestion-chip" onclick="sendSuggestion(this)">Help me study for
+                                exams</button>
+                            <button class="suggestion-chip" onclick="sendSuggestion(this)">Best focus
+                                techniques</button>
+                            <button class="suggestion-chip" onclick="sendSuggestion(this)">Create a study plan</button>
+                        </div>
+                        <div class="chat-input-row">
+                            <textarea id="chat-input" class="chat-input" placeholder="Ask your study question…" rows="1"
+                                onkeydown="handleChatKey(event)" oninput="autoResizeChat(this)"></textarea>
+                            <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">
+                                <span>↑</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- TASK MODAL -->
+    <div id="task-modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">New Task</h2>
+                <button class="modal-close" onclick="closeTaskModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="task-id" />
+                <div class="form-grid">
+                    <div class="field-group full">
+                        <label>Title</label>
+                        <input type="text" id="task-title" placeholder="e.g. Chapter 5 Review" />
+                    </div>
+                    <div class="field-group">
+                        <label>Subject</label>
+                        <input type="text" id="task-subject" placeholder="e.g. Mathematics" />
+                    </div>
+                    <div class="field-group">
+                        <label>Due Date</label>
+                        <input type="date" id="task-due" />
+                    </div>
+                    <div class="field-group">
+                        <label>Difficulty (1–5)</label>
+                        <input type="range" id="task-difficulty" min="1" max="5" value="3"
+                            oninput="document.getElementById('diff-val').textContent=this.value" />
+                        <span class="range-val" id="diff-val">3</span>
+                    </div>
+                    <div class="field-group">
+                        <label>Estimated Time (hrs)</label>
+                        <input type="number" id="task-time" min="0.5" max="12" step="0.5" value="1.5" />
+                    </div>
+                    <div class="field-group">
+                        <label>Priority (1–5)</label>
+                        <input type="range" id="task-priority" min="1" max="5" value="3"
+                            oninput="document.getElementById('pri-val').textContent=this.value" />
+                        <span class="range-val" id="pri-val">3</span>
+                    </div>
+                </div>
+
+                <div id="focus-prediction-box" class="focus-prediction-box hidden">
+                    <div class="fp-label">Focus Prediction for this task</div>
+                    <div class="fp-body">
+                        <div class="fp-level" id="fp-level">—</div>
+                        <div class="fp-bars" id="fp-bars"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn-secondary" onclick="previewFocus()">⚡ Preview Focus</button>
+                <button class="btn-primary" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING CHATBOT BUTTON -->
+    <button class="chatbot-fab" onclick="openChatbotTab()" title="Open AI Tutor">
+        <span class="fab-icon">💬</span>
+    </button>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="{% static 'script.js' %}"></script>
+    <script src="{% static 'dashboard.js' %}"></script>
+    <script src="{% static 'planner.js' %}"></script>
+    <script src="{% static 'chatbot.js' %}"></script>
+</body>
+
+</html>

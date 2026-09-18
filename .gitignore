@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment (recreate with: python -m venv venv && venv\Scripts\python -m pip install -r requirements.txt)
+venv/
+.venv/
+
+# Local database: holds user accounts and password hashes (recreate with: manage.py migrate)
+*.db
+*.sqlite3
+
+# Django collectstatic output
+staticfiles/
+
+# Secrets
+.env
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
